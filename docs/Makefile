@@ -31,9 +31,11 @@ install-py-deps:
 	$(PYTHON) -m uv pip install -r vercel_requirements.txt
 	$(PYTHON) -m uv pip install --editable $(PARTNER_DEPS_LIST)
 
-generate-files:
+_generate-files-internal:
 	mkdir -p $(INTERMEDIATE_DIR)
-	cp -r $(SOURCE_DIR)/* $(INTERMEDIATE_DIR)
+	rsync -am --delete $(SOURCE_DIR) $(INTERMEDIATE_DIR)
+
+generate-files: _generate-files-internal
 	mkdir -p $(INTERMEDIATE_DIR)/templates
 
 	$(PYTHON) scripts/model_feat_table.py $(INTERMEDIATE_DIR)
@@ -59,12 +61,22 @@ render:
 	$(PYTHON) scripts/notebook_convert.py $(INTERMEDIATE_DIR) $(OUTPUT_NEW_DOCS_DIR)
 
 md-sync:
-	rsync -avm --include="*/" --include="*.mdx" --include="*.md" --include="*.png" --exclude="*" $(INTERMEDIATE_DIR)/ $(OUTPUT_NEW_DOCS_DIR)
+	rsync -am --include="*/" --include="*.mdx" --include="*.md" --include="*.png" --exclude="*" $(INTERMEDIATE_DIR)/ $(OUTPUT_NEW_DOCS_DIR)
 
 generate-references:
 	$(PYTHON) scripts/generate_api_reference_links.py --docs_dir $(OUTPUT_NEW_DOCS_DIR)
 
 build: install-py-deps generate-files copy-infra render md-sync
+
+generate-watch:
+	fswatch $(SOURCE_DIR) | xargs -I{} make _generate-files-internal 
+
+echo:
+	echo "hi"
+	echo x$(SOURCE_PATHS)x
+
+build-watch:
+	fswatch $(INTERMEDIATE_DIR) | grep -E --line-buffered "(?:.md|.mdx|.ipynb)$$" | xargs -I{} make render md-sync copy-infra SOURCE_PATHS={}
 
 vercel-build: install-vercel-deps build generate-references
 	rm -rf docs
