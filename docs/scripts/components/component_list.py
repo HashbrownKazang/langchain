@@ -118,7 +118,11 @@ def main(component_names: Optional[list[str]] = None):
     packages = get_packages()
     exclude_packages = ["langchain_cli", "langchain_standard_tests"]
     # index page for these components created manually
-    exclude_components = [ComponentKind.LLM, ComponentKind.CHAT_MODEL]
+    exclude_components = [
+        ComponentKind.LLM,
+        ComponentKind.CHAT_MODEL,
+        ComponentKind.DOCUMENT_LOADER,
+    ]
 
     processing_components = (
         component_metadatas
