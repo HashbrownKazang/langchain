@@ -32,6 +32,8 @@ repos:
         path: libs/partners/azure-dynamic-sessions
       - name: langchain-chroma
         path: libs/partners/chroma
+      - name: langchain-couchbase
+        path: libs/partners/couchbase
       - name: langchain-exa
         path: libs/partners/exa
       - name: langchain-fireworks
@@ -76,7 +78,7 @@ repos:
     packages:
       - name: langchain-astradb
         path: libs/astradb
-  - name: google
+  - name: langchain-google
     slug: langchain-ai/langchain-google
     packages:
       - name: langchain-google-community
@@ -85,29 +87,29 @@ repos:
         path: libs/genai
       - name: langchain-google-vertexai
         path: libs/vertexai
-  - name: weaviate
+  - name: langchain-weaviate
     slug: langchain-ai/langchain-weaviate
     packages:
       - name: langchain-weaviate
         path: libs/weaviate
-  - name: cohere
+  - name: langchain-cohere
     slug: langchain-ai/langchain-cohere
     packages:
       - name: langchain-cohere
         path: libs/cohere
-  - name: elastic
+  - name: langchain-elastic
     slug: langchain-ai/langchain-elastic
     packages:
       - name: langchain-elasticsearch
         path: libs/elasticsearch
-  - name: nvidia
+  - name: langchain-nvidia
     slug: langchain-ai/langchain-nvidia
     packages:
       - name: langchain-nvidia-ai-endpoints
         path: libs/ai-endpoints
       - name: langchain-nvidia-trt
         path: libs/trt
-  - name: postgres
+  - name: langchain-postgres
     slug: langchain-ai/langchain-postgres
     packages:
       - name: langchain-postgres
@@ -115,3 +117,54 @@ repos:
         path: .
 
   # Partner integration repositories NOT in the langchain-ai organization:
+  # Google repositories:
+  - name: langchain-google-alloydb-pg-python
+    slug: googleapis/langchain-google-alloydb-pg-python
+    packages:
+      - name: langchain-google-alloydb-pg-python
+        path: src/langchain_google_alloydb_pg_python
+  - name: langchain-google-bigtable-python
+    slug: googleapis/langchain-google-bigtable-python
+    packages:
+      - name: langchain-google-bigtable
+        path: src/langchain_google_bigtable
+  - name: langchain-google-cloud-sql-mysql-python
+    slug: googleapis/langchain-google-cloud-sql-mysql-python
+    packages:
+      - name: langchain-google-cloud-sql-mysql
+        path: src/langchain_google_cloud_sql_mysql
+  - name: langchain-google-cloud-sql-mssql-python
+    slug: googleapis/langchain-google-cloud-sql-mssql-python
+    packages:
+      - name: langchain-google-cloud-sql-mssql
+        path: src/langchain_google_cloud_sql_mssql
+  - name: langchain-google-cloud-sql-pg-python
+    slug: googleapis/langchain-google-cloud-sql-pg-python
+    packages:
+      - name: langchain-google-cloud-sql-pg
+        path: src/langchain_google_cloud_sql_pg
+  - name: langchain-google-datastore-python
+    slug: googleapis/langchain-google-datastore-python
+    packages:
+      - name: langchain-google-datastore
+        path: src/langchain_google_datastore
+  - name: langchain-google-el-carro-python
+    slug: googleapis/langchain-google-el-carro-python
+    packages:
+      - name: langchain-google-el-carro
+        path: src/langchain_google_el_carro
+  - name: langchain-google-firestore-python
+    slug: googleapis/langchain-google-firestore-python
+    packages:
+      - name: langchain-google-firestore
+        path: src/langchain_google_firestore
+  - name: langchain-google-memorystore-redis-python
+    slug: googleapis/langchain-google-memorystore-redis-python
+    packages:
+      - name: langchain-google-memorystore-redis
+        path: src/langchain_google_memorystore_redis
+  - name: langchain-google-spanner-python
+    slug: googleapis/langchain-google-spanner-python
+    packages:
+      - name: langchain-google-spanner
+        path: src/langchain_google_spanner
