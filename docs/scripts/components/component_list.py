@@ -81,6 +81,9 @@ def generate_component_index_page(
     output_file = component_dir / "index.mdx"
     table_str = generate_table(class_fully_qualified_names)
     component_name = component_metadata.kind.name.replace("_", " ").title()
+    # patch for the 'embedding' component
+    if component_name == "Embedding":
+        component_name = "Embedding model"
     base_class_link = get_class_link(component_metadata.base_class)
 
     index_file_content = """---
@@ -169,5 +172,5 @@ def main(component_names: Optional[list[str]] = None):
 
 
 if __name__ == "__main__":
-    # main(component_names=["embedding"])
-    main()
+    main(component_names=["embedding"])
+    # main()
