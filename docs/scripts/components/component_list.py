@@ -97,8 +97,7 @@ sidebar_class_name: hidden
 
 This table lists all {classes_num} derived classes.
 
-{table}
-"""
+{table}"""
     index_file_content = (
         index_file_content.replace("{component_name}", component_name)
         .replace("{classes_num}", str(len(class_fully_qualified_names)))
