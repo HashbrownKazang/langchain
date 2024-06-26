@@ -9,9 +9,10 @@ are duplicated in this utility respectively from modules:
 """
 
 import logging
-from typing import List, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
+from bson import ObjectId, json_util
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,34 @@ def maximal_marginal_relevance(
     lambda_mult: float = 0.5,
     k: int = 4,
 ) -> List[int]:
-    """Calculate maximal marginal relevance."""
+    """Compute Maximal Marginal Relevance (MMR).
+
+    MMR is a technique used to select documents that are both relevant to the query and diverse among themselves.
+    This function returns the indices of the top-k embeddings that maximize the marginal relevance.
+
+    Args:
+        query_embedding (np.ndarray): The embedding vector of the query.
+        embedding_list (list of np.ndarray): A list containing the embedding vectors of the candidate documents.
+        lambda_mult (float, optional): The trade-off parameter between relevance and diversity. Defaults to 0.5.
+        k (int, optional): The number of embeddings to select. Defaults to 4.
+
+    Returns:
+        list of int: The indices of the selected embeddings that maximize the marginal relevance.
+
+    Notes:
+        The Maximal Marginal Relevance (MMR) is computed using the following formula:
+
+        MMR = argmax_{D_i ∈ R \ S} [ λ * Sim(D_i, Q) - (1 - λ) * max_{D_j ∈ S} Sim(D_i, D_j) ]
+
+        where:
+        - R is the set of candidate documents,
+        - S is the set of selected documents,
+        - Q is the query embedding,
+        - Sim(D_i, Q) is the similarity between document D_i and the query,
+        - Sim(D_i, D_j) is the similarity between documents D_i and D_j,
+        - λ is the trade-off parameter.
+    """
+
     if min(k, len(embedding_list)) <= 0:
         return []
     if query_embedding.ndim == 1:
@@ -83,3 +111,26 @@ def maximal_marginal_relevance(
         idxs.append(idx_to_add)
         selected = np.append(selected, [embedding_list[idx_to_add]], axis=0)
     return idxs
+
+
+def make_serializable(obj: Dict[str, Any]) -> None:
+    """Make every BSON ObjectId found JSON-Serializable.
+
+        Changes are made *in-place*.
+
+       Follows format used in bson.json_util.loads
+        e.g. loads('{"_id": {"$oid": "664..."}}') == {'_id': ObjectId('664..')} # noqa: E501
+
+    Args:
+        obj: Any dict that might contain a bson.ObjectID
+
+    Returns:
+        None. Changes are made *in-place*.
+    """
+    for k, v in obj.items():
+        if isinstance(v, dict):
+            make_serializable(v)
+        elif isinstance(v, list) and v and isinstance(v[0], ObjectId):
+            obj[k] = [json_util.default(item) for item in v]
+        elif isinstance(v, ObjectId):
+            obj[k] = json_util.default(v)
