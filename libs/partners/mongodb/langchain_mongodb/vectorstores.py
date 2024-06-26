@@ -17,6 +17,7 @@ from typing import (
 
 import numpy as np
 from bson import ObjectId, json_util
+from bson.errors import InvalidId
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from langchain_core.runnables.config import run_in_executor
@@ -33,6 +34,13 @@ VST = TypeVar("VST", bound=VectorStore)
 logger = logging.getLogger(__name__)
 
 DEFAULT_INSERT_BATCH_SIZE = 100_000
+
+
+class DocumentWithId(Document):
+    """Small extension to base Document inlcudes DB id"""
+    id: Optional[str]
+    """ID within the vector store / collection.
+    If 24-character hex sring, this will be stored as ObjectIds internally"""
 
 
 class MongoDBAtlasVectorSearch(VectorStore):
@@ -169,7 +177,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
                     size = 0
         if texts_batch:
             result_ids.extend(self._insert_texts(texts_batch, metadatas_batch))  # type: ignore
-        return result_ids
+        return [str(result_ids) for i in result_ids]
 
     def _insert_texts(self, texts: List[str], metadatas: List[Dict[str, Any]]) -> List:
         if not texts:
@@ -191,8 +199,9 @@ class MongoDBAtlasVectorSearch(VectorStore):
         pre_filter: Optional[Dict] = None,
         post_filter_pipeline: Optional[List[Dict]] = None,
         include_embedding: bool = False,
+        include_ids: bool = False,
         **kwargs: Any,
-    ) -> List[Tuple[Document, float]]:
+    ) -> List[Tuple[DocumentWithId, float]]:
         params = {
             "queryVector": embedding,
             "path": self._embedding_key,
@@ -234,7 +243,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
             # following format used in bson.json_util.loads
             # e.g. loads('{"_id": {"$oid": "664..."}}') == {'_id': ObjectId('664..')} # noqa: E501
             _make_serializable(res)
-            docs.append((Document(page_content=text, metadata=res), score))
+            docs.append((DocumentWithId(page_content=text, metadata=res, id=str(res["_id"])), score))
         return docs
 
     def similarity_search_with_score(
@@ -244,7 +253,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
         pre_filter: Optional[Dict] = None,
         post_filter_pipeline: Optional[List[Dict]] = None,
         **kwargs: Any,
-    ) -> List[Tuple[Document, float]]:
+    ) -> List[Tuple[DocumentWithId, float]]:
         """Return MongoDB documents most similar to the given query and their scores.
 
         Uses the vectorSearch operator available in MongoDB Atlas Search.
@@ -318,7 +327,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
         pre_filter: Optional[Dict] = None,
         post_filter_pipeline: Optional[List[Dict]] = None,
         **kwargs: Any,
-    ) -> List[Document]:
+    ) -> List[DocumentWithId]:
         """Return documents selected using the maximal marginal relevance.
 
         Maximal marginal relevance optimizes for similarity to query AND diversity
@@ -358,6 +367,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
         embedding: Embeddings,
         metadatas: Optional[List[Dict]] = None,
         collection: Optional[Collection[MongoDBDocumentType]] = None,
+        ids: List[str] = None,
         **kwargs: Any,
     ) -> MongoDBAtlasVectorSearch:
         """Construct a `MongoDB Atlas Vector Search` vector store from raw documents.
@@ -433,7 +443,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
         pre_filter: Optional[Dict] = None,
         post_filter_pipeline: Optional[List[Dict]] = None,
         **kwargs: Any,
-    ) -> List[Document]:  # type: ignore
+    ) -> List[DocumentWithId]:  # type: ignore
         """Return docs selected using the maximal marginal relevance.
 
         Maximal marginal relevance optimizes for similarity to query AND diversity
@@ -478,7 +488,7 @@ class MongoDBAtlasVectorSearch(VectorStore):
         fetch_k: int = 20,
         lambda_mult: float = 0.5,
         **kwargs: Any,
-    ) -> List[Document]:
+    ) -> List[DocumentWithId]:
         """Return docs selected using the maximal marginal relevance."""
         return await run_in_executor(
             None,
@@ -489,3 +499,21 @@ class MongoDBAtlasVectorSearch(VectorStore):
             lambda_mult=lambda_mult,
             **kwargs,
         )
+
+
+def str_to_id(str_repr: str) -> ObjectId | str:
+    """Convert string representation to ObjectID.
+
+    If not a 24 character hex string, then return str_repr
+
+    Args:
+        str_repr: 24 character hex string, for performance. Else any string.
+
+    Returns:
+        ObjectID
+    """
+    try:
+        return ObjectId(str_repr)
+    except InvalidId:
+        logger.debug("For performance, ids must 12-byte input or a 24-character hex string")
+        return str_repr
