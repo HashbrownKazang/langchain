@@ -505,7 +505,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                 options=options,
                 name=config.get("run_name"),
                 run_id=config.pop("run_id", None),
-                batch_size=1,
             )
             generation: Optional[GenerationChunk] = None
             try:
@@ -566,7 +565,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
             options=options,
             name=config.get("run_name"),
             run_id=config.pop("run_id", None),
-            batch_size=1,
         )
         generation: Optional[GenerationChunk] = None
         try:
@@ -872,7 +870,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                     invocation_params=params,
                     options=options,
                     name=run_name,
-                    batch_size=len(prompts),
                     run_id=run_id_,
                 )[0]
                 for callback_manager, prompt, run_name, run_id_ in zip(
@@ -891,7 +888,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                     invocation_params=params,
                     options=options,
                     name=run_name_list[idx],
-                    batch_size=len(missing_prompts),
                 )[0]
                 for idx in missing_prompt_idxs
             ]
@@ -1094,7 +1090,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                         invocation_params=params,
                         options=options,
                         name=run_name,
-                        batch_size=len(prompts),
                         run_id=run_id_,
                     )
                     for callback_manager, prompt, run_name, run_id_ in zip(
@@ -1120,7 +1115,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                         invocation_params=params,
                         options=options,
                         name=run_name_list[idx],
-                        batch_size=len(missing_prompts),
                     )
                     for idx in missing_prompt_idxs
                 ]
