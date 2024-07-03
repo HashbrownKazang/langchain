@@ -6,6 +6,7 @@ if TYPE_CHECKING:
     from langchain_community.document_loaders import (
         UnstructuredAPIFileIOLoader,
         UnstructuredAPIFileLoader,
+        UnstructuredBaseLoader,
         UnstructuredFileIOLoader,
         UnstructuredFileLoader,
     )
@@ -26,12 +27,12 @@ DEPRECATED_LOOKUP = {
     "validate_unstructured_version": (
         "langchain_community.document_loaders.unstructured"
     ),
-    "UnstructuredBaseLoader": "langchain_community.document_loaders.unstructured",
-    "UnstructuredFileLoader": "langchain_community.document_loaders",
     "get_elements_from_api": "langchain_community.document_loaders.unstructured",
     "UnstructuredAPIFileLoader": "langchain_community.document_loaders",
-    "UnstructuredFileIOLoader": "langchain_community.document_loaders",
     "UnstructuredAPIFileIOLoader": "langchain_community.document_loaders",
+    "UnstructuredBaseLoader": "langchain_community.document_loaders.unstructured",
+    "UnstructuredFileLoader": "langchain_community.document_loaders",
+    "UnstructuredFileIOLoader": "langchain_community.document_loaders",
 }
 
 _import_attribute = create_importer(__package__, deprecated_lookups=DEPRECATED_LOOKUP)
